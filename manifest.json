@@ -1,0 +1,13 @@
+[
+  {
+    "name": "CoListen",
+    "description": "Listen to music in sync with your friends in real time. Share a 6-character code, everyone joins instantly. No accounts needed.",
+    "preview": "preview.png",
+    "main": "coListen.js",
+    "readme": "README.md",
+    "authors": [
+      { "name": "Sermyyy", "url": "https://github.com/Sermyyy" }
+    ],
+    "tags": ["social", "sync", "friends", "multiplayer"]
+  }
+]
