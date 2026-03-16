@@ -16,6 +16,65 @@ function main() {
   const { useState, useEffect } = React;
 
   const STORAGE_KEY = "coListen:username";
+  const POS_KEY     = "coListen:panelPos";
+
+  function loadPanelPos() {
+    try {
+      const p = JSON.parse(Spicetify.LocalStorage.get(POS_KEY) || "null");
+      return p && typeof p.x === "number" && typeof p.y === "number" ? p : null;
+    } catch { return null; }
+  }
+
+  function savePanelPos(x, y) {
+    try { Spicetify.LocalStorage.set(POS_KEY, JSON.stringify({ x, y })); } catch {}
+  }
+
+  function applyDrag(panelEl) {
+    // Apply saved position
+    const saved = loadPanelPos();
+    if (saved) {
+      panelEl.style.right  = "auto";
+      panelEl.style.top    = saved.y + "px";
+      panelEl.style.left   = saved.x + "px";
+    }
+
+    const header = panelEl.querySelector(".lt-hd");
+    if (!header) return;
+
+    let dragging = false;
+    let startX, startY, origLeft, origTop;
+
+    header.addEventListener("mousedown", (e) => {
+      // Don't drag if clicking the X button
+      if (e.target.closest(".lt-x")) return;
+      dragging = true;
+      const rect = panelEl.getBoundingClientRect();
+      startX   = e.clientX;
+      startY   = e.clientY;
+      origLeft = rect.left;
+      origTop  = rect.top;
+      panelEl.style.right = "auto";
+      panelEl.style.left  = origLeft + "px";
+      panelEl.style.top   = origTop  + "px";
+      e.preventDefault();
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      const dx   = e.clientX - startX;
+      const dy   = e.clientY - startY;
+      const newX = Math.max(0, Math.min(window.innerWidth  - panelEl.offsetWidth,  origLeft + dx));
+      const newY = Math.max(0, Math.min(window.innerHeight - panelEl.offsetHeight, origTop  + dy));
+      panelEl.style.left = newX + "px";
+      panelEl.style.top  = newY + "px";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (!dragging) return;
+      dragging = false;
+      savePanelPos(parseInt(panelEl.style.left), parseInt(panelEl.style.top));
+    });
+  }
   const SERVER_URL  = "wss://lt-server.sermysergio.workers.dev";
   const HEARTBEAT_MS = 4000; // only used to detect track changes & play/pause
 
@@ -451,7 +510,10 @@ function main() {
         box-shadow:0 20px 60px rgba(0,0,0,.8);color:#fff;
         font-family:'Circular','Helvetica Neue',Arial,sans-serif;
         animation:lt-in .15s cubic-bezier(.16,1,.3,1);overflow:hidden;
+        user-select:none;
       }
+      #lt-root .lt-hd { cursor:grab; }
+      #lt-root .lt-hd:active { cursor:grabbing; }
       #lt-root .lt-hd { display:flex;align-items:center;justify-content:space-between;padding:13px 15px 11px;border-bottom:1px solid #1a1a1a; }
       #lt-root .lt-hl { display:flex;align-items:center;gap:7px; }
       #lt-root .lt-dot { width:6px;height:6px;border-radius:50%;background:#1ed760;box-shadow:0 0 5px #1ed76077; }
@@ -745,6 +807,11 @@ function main() {
         React.createElement(Panel, { onClose: () => { isOpen = false; renderUI(); } }),
         container
       );
+      // Apply drag after React renders the panel
+      requestAnimationFrame(() => {
+        const panel = container.querySelector(".lt-panel");
+        if (panel) applyDrag(panel);
+      });
     } else if (session.active || session.ws) {
       ReactDOM.render(
         React.createElement(Bar, { onClick: () => { isOpen = true; renderUI(); } }),
