@@ -75,6 +75,10 @@ Search for **CoListen** in the Spicetify Marketplace and click Install.
 
 Made by [@Sermyyy](https://github.com/Sermyyy)
 
+## Donate
+
+[Ko-fi](https://ko-fi.com/sermyyy)
+
 ## License
 
 MIT
