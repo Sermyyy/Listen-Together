@@ -759,6 +759,25 @@ function main() {
         ),
 
         e("div", { className: "lt-st" },
+
+          // Playback controls — everyone can control
+          e("div", { style: { display:"flex", gap:6 } },
+            [["⏮","prev"],["⏸","pause"],["▶","play"],["⏭","next"]].map(([icon, action]) =>
+              e("button", {
+                key: action,
+                style: {
+                  flex:1, padding:"9px 0", background:"#1a1a1a",
+                  border:"1px solid #2a2a2a", borderRadius:8,
+                  color:"#888", cursor:"pointer", fontSize:15,
+                  transition:"background .12s, color .12s",
+                },
+                onClick: () => cmd(action),
+                onMouseOver: ev => { ev.currentTarget.style.background="#222"; ev.currentTarget.style.color="#fff"; },
+                onMouseOut:  ev => { ev.currentTarget.style.background="#1a1a1a"; ev.currentTarget.style.color="#888"; },
+              }, icon)
+            )
+          ),
+
           // Sync button (guest only)
           !session.amHost && e("button", {
             className: `lt-btn lt-sy ${syncing ? "lt-dim" : ""}`,
